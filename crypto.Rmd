@@ -1,0 +1,80 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code.
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*.
+
+```{r}
+#https://github.com/gokseledizyigit/crypto2
+#https://cran.r-project.org/web/views/OfficialStatistics.html 
+#https://dk81.github.io/dkmathstats_site/coinmarketcap_Rpage.html
+#https://dk81.github.io/dkmathstats_site/feargreed_crypto.html
+#github.io/dkmathstats_site/Rcoinbase_candlestickCharts.html
+#https://github.com/gokseledizyigit/defi
+
+install.packages("crypto2")
+library(crypto2)
+library(dplyr)
+
+coins <- crypto_list(only_active=TRUE)
+coins
+
+coin_info3 <- crypto_info(coins, limit=3, finalWait=FALSE)
+coin_info3
+  
+coin_hist3 <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
+coin_hist3
+
+all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
+all_quotes
+
+str(all_quotes)
+
+all_quotes %>% select(timestamp, USD_total_market_cap, USD_altcoin_market_cap) %>% 
+  pivot_longer(cols = 2:3, names_to = "Market Cap", values_to = "bn. USD") %>% 
+  separate(`Market Cap`,into = c("Currency","Type","Market","Cap")) %>% 
+  mutate(`bn. USD`=`bn. USD`/1000000000) %>% 
+  ggplot(ggplot2::aes(x=timestamp,y=`bn. USD`,color=Type)) + ggplot2::geom_line() +
+  labs(title="Market capitalization in bn USD", subtitle="Source:CoinMarketCap.com")
+
+library(ggplot2)
+ggplot(data=all_quotes,aes(x=timestamp,y=btc_dominance)) + geom_line(lwd=0.7,col="red")+ labs(title="BTC Dominance since 2014",
+       subtitle = "Source:CoinMarketCap.com", x="Years", y="BTC Dominance")
+library(dplyr)
+head(all_quotes)
+
+btcdom=all_quotes %>% 
+  filter(timestamp %in% c("2022-01-01"))
+  
+install.packages("scales")                         
+library("scales")
+install.packages("ggthemes")
+library(ggthemes) 
+
+
+ggplot(data=all_quotes,aes(x=timestamp,y=btc_dominance)) + geom_line(lwd=0.7,col="red")+ labs(title="BTC Dominance September 2022 to Today",
+       subtitle = "Source:CoinMarketCap.com", x="Months", y="BTC Dominance")+ scale_x_date(limits = as.Date(c("2022-09-01", "2022-12-18")))+ylim(35,45)
+  
+#sended
+ggplot(data=all_quotes,aes(x=timestamp,y=btc_dominance)) + geom_line(lwd=0.7,col="chartreuse3")+ labs(title="Daily BTC Dominance Since September 2022",
+       subtitle = "Data:CoinMarketCap.com", x="Months", y="BTC Dominance")+ scale_x_date(limits = as.Date(c("2022-09-01", "2022-12-18")))+ylim(35,45)+theme_economist()+scale_color_economist()+theme(axis.title.x = element_text( size=10,vjust=3,colour="black"),
+        axis.text.x  = element_text( vjust=5, size=8,colour = "black"))+
+  theme(axis.title.y = element_text( size=10,vjust=2,colour = "black"),
+        axis.text.y  = element_text( vjust=0.5, size=8,colour = "black"))+theme(plot.title = element_text(hjust=0.5,size=13,colour="darkblue"))+theme(plot.subtitle = element_text(size =9,vjust=-1.8,colour="black"))
+
+
+
+View(all_quotes)
+  
+
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
